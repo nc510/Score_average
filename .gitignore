@@ -4,6 +4,8 @@ vv/
 # PyInstaller build artifacts
 build/
 dist/
+build_onedir/
+dist_onedir/
 *.spec
 
 # Python compiled files
@@ -29,3 +31,6 @@ Thumbs.db
 # Environment variables
 .env
 .env.local
+
+# Embedded QR code data (auto-generated)
+qr_codes.py

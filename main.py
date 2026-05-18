@@ -4,7 +4,10 @@ import pandas as pd
 import os
 import traceback
 import datetime
-
+import base64
+import io
+from qr_codes import WECHAT_QR_CODE, DONATION_QR_CODE
+# 定义成绩分析器类
 class ScoreAnalyzer:
     def __init__(self, root):
         self.root = root
@@ -16,7 +19,7 @@ class ScoreAnalyzer:
         
         self.style = ttk.Style()
         self.style.theme_use('clam')
-    
+        
     def set_window_icon(self):
         try:
             from PIL import Image, ImageTk
@@ -37,14 +40,14 @@ class ScoreAnalyzer:
         self.log_message("程序启动")
         
         self.create_widgets()
-    
+    # 定义日志记录方法
     def log_message(self, message, level="INFO"):
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         log_entry = f"[{timestamp}] [{level}] {message}\n"
         print(log_entry.strip())
         with open(self.log_file, "a", encoding="utf-8") as f:
             f.write(log_entry)
-    
+    # 定义创建界面组件方法
     def create_widgets(self):
         main_frame = ttk.Frame(self.root, padding="10")
         main_frame.pack(fill=tk.BOTH, expand=True)
@@ -105,7 +108,7 @@ class ScoreAnalyzer:
         self.status_label.pack(fill=tk.X)
         
         self.create_menu()
-    
+    # 定义创建菜单方法
     def create_menu(self):
         menubar = tk.Menu(self.root)
         
@@ -116,7 +119,7 @@ class ScoreAnalyzer:
         menubar.add_cascade(label="帮助", menu=help_menu)
         
         self.root.config(menu=menubar)
-    
+    # 定义显示关于窗口方法
     def show_about(self):
         about_window = tk.Toplevel(self.root)
         about_window.title("关于")
@@ -148,7 +151,7 @@ class ScoreAnalyzer:
         ttk.Label(frame, text="• 导出统计结果到Excel文件").pack(anchor=tk.W)
         
         ttk.Button(frame, text="确定", command=about_window.destroy).pack(pady=15)
-    
+    # 定义显示添加微信窗口方法
     def show_wechat(self):
         wechat_window = tk.Toplevel(self.root)
         wechat_window.title("添加微信好友")
@@ -168,20 +171,17 @@ class ScoreAnalyzer:
         
         try:
             from PIL import Image, ImageTk
-            
-            qr_path = os.path.join(os.path.dirname(__file__), "加好友.png")
-            if os.path.exists(qr_path):
-                img = Image.open(qr_path)
-                img = img.resize((200, 200), Image.LANCZOS)
-                photo = ImageTk.PhotoImage(img)
-                
-                qr_label = ttk.Label(qr_frame, image=photo)
-                qr_label.image = photo
-                qr_label.pack()
-                
-                wechat_window.photo = photo
-            else:
-                ttk.Label(qr_frame, text=f"图片文件不存在: {qr_path}", foreground="red").pack()
+
+            img_data = base64.b64decode(WECHAT_QR_CODE)
+            img = Image.open(io.BytesIO(img_data))
+            img = img.resize((200, 200), Image.LANCZOS)
+            photo = ImageTk.PhotoImage(img)
+
+            qr_label = ttk.Label(qr_frame, image=photo)
+            qr_label.image = photo
+            qr_label.pack()
+
+            wechat_window.photo = photo
         except Exception as e:
             self.log_message(f"微信二维码加载失败: {e}", level="ERROR")
             ttk.Label(qr_frame, text="二维码加载失败", foreground="red").pack()
@@ -190,7 +190,7 @@ class ScoreAnalyzer:
         ttk.Label(frame, text="昵称：倾尽温柔").pack(pady=2)
         
         ttk.Button(frame, text="关闭", command=wechat_window.destroy).pack(pady=15)
-    
+    # 定义显示支持打赏窗口方法
     def show_donation(self):
         donation_window = tk.Toplevel(self.root)
         donation_window.title("支持打赏")
@@ -207,23 +207,20 @@ class ScoreAnalyzer:
         
         qr_frame = ttk.Frame(frame, relief=tk.SUNKEN, padding=10)
         qr_frame.pack(pady=10)
-        
+        # 加载打赏二维码图片
         try:
             from PIL import Image, ImageTk
-            
-            qr_path = os.path.join(os.path.dirname(__file__), "打赏.png")
-            if os.path.exists(qr_path):
-                img = Image.open(qr_path)
-                img = img.resize((200, 200), Image.LANCZOS)
-                photo = ImageTk.PhotoImage(img)
-                
-                qr_label = ttk.Label(qr_frame, image=photo)
-                qr_label.image = photo
-                qr_label.pack()
-                
-                donation_window.photo = photo
-            else:
-                ttk.Label(qr_frame, text=f"图片文件不存在: {qr_path}", foreground="red").pack()
+
+            img_data = base64.b64decode(DONATION_QR_CODE)
+            img = Image.open(io.BytesIO(img_data))
+            img = img.resize((200, 200), Image.LANCZOS)
+            photo = ImageTk.PhotoImage(img)
+
+            qr_label = ttk.Label(qr_frame, image=photo)
+            qr_label.image = photo
+            qr_label.pack()
+
+            donation_window.photo = photo
         except Exception as e:
             self.log_message(f"打赏二维码加载失败: {e}", level="ERROR")
             ttk.Label(qr_frame, text="二维码加载失败", foreground="red").pack()
@@ -232,14 +229,14 @@ class ScoreAnalyzer:
         ttk.Label(frame, text="感谢您的支持！", font=("微软雅黑", 10, "italic")).pack(pady=2)
         
         ttk.Button(frame, text="关闭", command=donation_window.destroy).pack(pady=15)
-    
+    # 定义浏览文件方法
     def browse_file(self):
         self.log_message("开始选择Excel文件")
         self.file_path = filedialog.askopenfilename(
             title="选择成绩Excel文件",
             filetypes=[("Excel文件", "*.xlsx;*.xls"), ("所有文件", "*.*")]
         )
-        
+        # 检查文件路径是否为空
         if self.file_path:
             self.log_message(f"文件选择成功: {self.file_path}")
             self.log_message(f"文件是否存在: {os.path.exists(self.file_path)}")
@@ -273,29 +270,29 @@ class ScoreAnalyzer:
             self.file_label.config(text="未选择文件")
             self.analyze_btn.config(state=tk.DISABLED)
             self.sheet_combo.set("")
-    
+    # 定义工作表选择方法
     def on_sheet_selected(self, event):
         self.sheet_name = self.sheet_combo.get()
         self.log_message(f"切换到工作表: {self.sheet_name}")
-    
+    # 定义分析数据方法
     def analyze_data(self):
         try:
             self.log_message("开始分析数据")
             self.log_message(f"当前文件路径: {self.file_path}")
-            
+            # 检查文件路径是否为空
             if not self.file_path:
                 self.log_message("错误: 文件路径为空", "ERROR")
                 messagebox.showerror("错误", "请先选择文件")
                 return
-            
+            # 检查文件是否存在
             if not os.path.exists(self.file_path):
                 self.log_message(f"错误: 文件不存在 - {self.file_path}", "ERROR")
                 messagebox.showerror("错误", f"文件不存在:\n{self.file_path}")
                 return
-            
+            # 检查工作表是否存在
             self.status_label.config(text="状态: 正在读取数据...")
             self.root.update()
-            
+            # 读取Excel文件
             self.log_message(f"开始读取Excel文件，工作表: {self.sheet_name}")
             try:
                 self.df = pd.read_excel(self.file_path, sheet_name=self.sheet_name)
@@ -304,7 +301,7 @@ class ScoreAnalyzer:
                 self.log_message(f"Excel读取失败: {str(excel_error)}", "ERROR")
                 self.log_message(f"完整错误信息:\n{traceback.format_exc()}", "ERROR")
                 raise
-            
+            # 检查数据是否为空
             self.log_message(f"数据行数: {len(self.df)}")
             self.log_message(f"数据列数: {len(self.df.columns)}")
             self.log_message(f"列名: {list(self.df.columns)}")
@@ -344,23 +341,23 @@ class ScoreAnalyzer:
             self.log_message(f"完整错误堆栈:\n{traceback.format_exc()}", "ERROR")
             messagebox.showerror("错误", f"读取文件失败: {str(e)}\n\n详细信息请查看日志文件")
             self.status_label.config(text="状态: 读取失败")
-    
+    # 定义计算统计数据方法
     def calculate_stats(self):
         PASS_LINE = 60
         EXCELLENT_LINE = 80
-        
+        # 过滤出ID列
         id_cols = ['考号', '姓名', '学号']
         numeric_cols = self.df.select_dtypes(include=['number']).columns.tolist()
-        
+        # 过滤出题型列
         question_cols = [col for col in numeric_cols if col not in id_cols and col != '成绩']
         has_total = '成绩' in numeric_cols
         total_cols = ['成绩'] + question_cols if has_total else question_cols
-        
+        # 初始化统计数据列表
         stats_data = []
         headers = ["题型", "总分", "平均分", "最高分", "最低分", "人数", 
                    "及格人数", "及格率", "优秀人数", "优秀率"]
         stats_data.append(headers)
-        
+        # 计算每个题型的统计数据
         for col in total_cols:
             total = self.df[col].sum()
             avg = self.df[col].mean()
@@ -378,38 +375,39 @@ class ScoreAnalyzer:
                               round(min_val, 2), int(count), int(pass_count), 
                               f"{round(pass_rate, 1)}%", int(excellent_count), 
                               f"{round(excellent_rate, 1)}%"])
-        
+        # 计算总成绩的统计数据
         if has_total:
             avg_total = self.df['成绩'].mean()
             stats_data.append(["成绩平均分", "", round(avg_total, 2), "", "", "", "", "", "", ""])
-        
+        # 转换为DataFrame
         self.stats_df = pd.DataFrame(stats_data[1:], columns=stats_data[0])
-        
+        # 清空树状图
         self.clear_tree(self.stats_tree)
         self.stats_tree["columns"] = headers
         self.stats_tree["show"] = "headings"
-        
+        # 设置列宽
+        # self.stats_tree.column("题型", width=120)
         col_widths = [90, 70, 70, 70, 70, 50, 70, 60, 70, 60]
         for i, col in enumerate(headers):
             self.stats_tree.heading(col, text=col)
             self.stats_tree.column(col, width=col_widths[i])
-        
+        # 显示统计数据到树状图
         for row in stats_data[1:]:
             self.stats_tree.insert("", tk.END, values=row)
-    
+    # 定义清除树状图方法
     def clear_tree(self, tree):
         for item in tree.get_children():
             tree.delete(item)
-    
+    # 定义导出统计数据方法
     def export_stats(self):
         if self.stats_df is None:
             messagebox.showwarning("警告", "请先进行分析")
             return
-        
+        # 设置默认导出目录
         default_dir = os.path.expanduser("~/Desktop")
         if not os.path.exists(default_dir):
             default_dir = os.path.dirname(self.file_path) if self.file_path else "."
-        
+        # 选择导出路径
         output_path = filedialog.asksaveasfilename(
             title="保存统计表",
             defaultextension=".xlsx",
@@ -417,7 +415,7 @@ class ScoreAnalyzer:
             initialdir=default_dir,
             initialfile="题型分数统计表.xlsx"
         )
-        
+        # 导出统计数据到Excel文件
         if output_path:
             try:
                 self.stats_df.to_excel(output_path, index=False)

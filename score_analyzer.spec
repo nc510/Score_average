@@ -22,8 +22,7 @@ a = Analysis(
     ],
     datas=[
         ('ico.png', '.'),
-        ('加好友.png', '.'),
-        ('打赏.png', '.'),
+        ('qr_codes.py', '.'),
         ('vv/Library/lib/tcl8.6', 'tcl8.6'),
         ('vv/Library/lib/tk8.6', 'tk8.6'),
     ],
@@ -34,7 +33,7 @@ a = Analysis(
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=block_cipher,
-    noarchive=False,
+    noarchive=True,
 )
 
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
@@ -50,7 +49,7 @@ exe = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
+    upx=False,
     upx_exclude=[],
     runtime_tmpdir=None,
     console=False,
