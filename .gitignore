@@ -1,0 +1,31 @@
+# Virtual environment
+vv/
+
+# PyInstaller build artifacts
+build/
+dist/
+*.spec
+
+# Python compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Log files
+*.log
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
