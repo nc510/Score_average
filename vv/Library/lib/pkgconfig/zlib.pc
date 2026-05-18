@@ -1,0 +1,13 @@
+prefix=d:/0_TG/code2026/Score_average/Score_average/vv/Library
+exec_prefix=d:/0_TG/code2026/Score_average/Score_average/vv/Library
+libdir=d:/0_TG/code2026/Score_average/Score_average/vv/Library/lib
+sharedlibdir=d:/0_TG/code2026/Score_average/Score_average/vv/Library/lib
+includedir=d:/0_TG/code2026/Score_average/Score_average/vv/Library/include
+
+Name: zlib
+Description: zlib compression library
+Version: 1.3.1
+
+Requires:
+Libs: -L${libdir} -L${sharedlibdir} -lz
+Cflags: -I${includedir}
